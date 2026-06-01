@@ -1,0 +1,305 @@
+# Secret Sharing System
+
+Веб-застосунок для розподілення та відновлення секретів на основі схеми Шаміра (Shamir Secret Sharing), реалізований за допомогою Django та PostgreSQL.
+
+## Опис проєкту
+
+Система призначена для безпечного зберігання секретної інформації шляхом її поділу на декілька частин. Для відновлення секрету необхідно надати лише певну мінімальну кількість часток.
+
+Проєкт реалізує порогову криптографічну схему (k із n), де:
+
+* n — загальна кількість створених часток;
+* k — мінімальна кількість часток, необхідна для відновлення секрету.
+
+В основі системи лежить алгоритм Shamir Secret Sharing.
+
+## Основні можливості
+
+* Реєстрація та авторизація користувачів
+* Створення секретів
+* Генерація часток секрету
+* Розподілення часток між користувачами
+* Відновлення секрету з часток
+* Журналювання дій користувачів
+* REST API для роботи із секретами
+* Захищене зберігання даних
+* Адміністративна панель Django
+
+## Технології
+
+### Backend
+
+* Python 3.12+
+* Django 5+
+* Django REST Framework
+
+### Database
+
+* PostgreSQL
+
+### Security
+
+* Shamir Secret Sharing
+* Cryptography (Fernet)
+* Django Authentication
+
+### Testing
+
+* Pytest
+* Django Test Framework
+
+## Архітектура проєкту
+
+```text
+secret-sharing-system/
+│
+├── config/
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+│
+├── accounts/
+│   ├── models.py
+│   ├── views.py
+│   └── urls.py
+│
+├── secrets_app/
+│   ├── models.py
+│   ├── views.py
+│   ├── serializers.py
+│   ├── services.py
+│   └── urls.py
+│
+├── crypto/
+│   ├── shamir.py
+│   └── encryption.py
+│
+├── logs/
+│   └── models.py
+│
+├── templates/
+│
+├── static/
+│
+├── tests/
+│
+├── requirements.txt
+└── manage.py
+```
+
+## Модель даних
+
+### Secret
+
+Містить інформацію про секрет.
+
+```python
+class Secret(models.Model):
+    owner = models.ForeignKey(User)
+    title = models.CharField(max_length=255)
+
+    threshold = models.IntegerField()
+    shares_count = models.IntegerField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+```
+
+### Share
+
+Містить окрему частку секрету.
+
+```python
+class Share(models.Model):
+    secret = models.ForeignKey(Secret)
+
+    participant = models.ForeignKey(User)
+
+    x = models.IntegerField()
+    y = models.TextField()
+```
+
+### RecoveryLog
+
+Журнал відновлення секретів.
+
+```python
+class RecoveryLog(models.Model):
+    secret = models.ForeignKey(Secret)
+
+    recovered_by = models.ForeignKey(User)
+
+    recovered_at = models.DateTimeField(
+        auto_now_add=True
+    )
+```
+
+## Встановлення
+
+### Клонування репозиторію
+
+```bash
+git clone https://github.com/username/secret-sharing-system.git
+cd secret-sharing-system
+```
+
+### Створення віртуального середовища
+
+```bash
+python -m venv venv
+```
+
+Linux/MacOS:
+
+```bash
+source venv/bin/activate
+```
+
+Windows:
+
+```bash
+venv\Scripts\activate
+```
+
+### Встановлення залежностей
+
+```bash
+pip install -r requirements.txt
+```
+
+### Налаштування PostgreSQL
+
+Створити базу даних:
+
+```sql
+CREATE DATABASE secret_sharing;
+```
+
+Створити файл `.env`:
+
+```env
+DB_NAME=secret_sharing
+DB_USER=postgres
+DB_PASSWORD=password
+DB_HOST=localhost
+DB_PORT=5432
+
+SECRET_KEY=django-secret-key
+DEBUG=True
+```
+
+### Міграції
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+### Створення суперкористувача
+
+```bash
+python manage.py createsuperuser
+```
+
+### Запуск сервера
+
+```bash
+python manage.py runserver
+```
+
+Після запуску:
+
+```text
+http://127.0.0.1:8000
+```
+
+## API
+
+### Створення секрету
+
+```http
+POST /api/secrets/
+```
+
+Приклад запиту:
+
+```json
+{
+    "title": "Database Password",
+    "secret": "SuperPassword",
+    "shares_count": 5,
+    "threshold": 3
+}
+```
+
+### Отримати список секретів
+
+```http
+GET /api/secrets/
+```
+
+### Отримати частки
+
+```http
+GET /api/secrets/{id}/shares/
+```
+
+### Відновити секрет
+
+```http
+POST /api/recover/
+```
+
+Приклад:
+
+```json
+{
+    "shares": [
+        {
+            "x": 1,
+            "y": "..."
+        },
+        {
+            "x": 2,
+            "y": "..."
+        },
+        {
+            "x": 3,
+            "y": "..."
+        }
+    ]
+}
+```
+
+## Алгоритм роботи
+
+1. Користувач створює секрет.
+2. Система генерує випадковий поліном.
+3. Створюються n часток секрету.
+4. Частки розподіляються між учасниками.
+5. Для відновлення необхідно надати не менше ніж k часток.
+6. Секрет відновлюється за допомогою інтерполяції Лагранжа.
+
+## Тестування
+
+Запуск усіх тестів:
+
+```bash
+pytest
+```
+
+Або:
+
+```bash
+python manage.py test
+```
+
+## Безпека
+
+У проєкті передбачено:
+
+* шифрування секретів перед записом у БД;
+* автентифікацію користувачів;
+* контроль доступу до секретів;
+* журналювання критичних операцій;
+* захист від несанкціонованого відновлення секретів.
+
