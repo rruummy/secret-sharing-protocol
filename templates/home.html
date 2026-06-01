@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Головна - Secret Sharing System{% endblock %}
+
+{% block content %}
+<div class="p-5 mb-4 bg-white rounded-3 border text-center shadow-sm mt-5">
+    <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold text-dark">Система безпечного розподілу секретів</h1>
+        <p class="col-md-8 mx-auto fs-4 text-muted mt-3">
+            Цей веб-додаток реалізує криптографічну схему розділення секрету Шаміра. 
+            Ви можете розбити свій пароль чи конфіденційні дані на <var>n</var> часток, 
+            визначити поріг відновлення <var>k</var> та безпечно зберігати їх без ризику витоку.
+        </p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mt-4">
+            <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg px-4 gap-3">Почати роботу</a>
+            <a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary btn-lg px-4">Увійти в акаунт</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

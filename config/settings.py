@@ -62,10 +62,11 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],  # Перевірь цей рядок!
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -134,3 +135,4 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
+LOGIN_URL = 'accounts:login'
