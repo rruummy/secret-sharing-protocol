@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Частки секрету - Secret Sharing System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-body p-4">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">Панель</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'secrets_app:list' %}">Секрети</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'secrets_app:detail' secret.pk %}">{{ secret.title }}</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Частки</li>
+                    </ol>
+                </nav>
+
+                <h3 class="fw-bold text-dark mb-2">🧩 Згенеровані частки (Shares)</h3>
+                <p class="text-muted mb-4">Кожна частка містить унікальну координату <var>X</var> та зашифрований масив координат <var>Y</var>.</p>
+
+                <div class="row g-3">
+                    {% for share in shares %}
+                        <div class="col-12">
+                            <div class="border rounded-3 p-3 bg-white shadow-sm">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="mb-0 fw-bold text-primary">Частка #{{ share.x }} (Учасник: {{ share.participant }})</h5>
+                                    <button class="btn btn-sm btn-outline-secondary btn-copy" data-share='{{ share.full_y }}' data-x='{{ share.x }}'>
+                                        📋 Копіювати в JSON
+                                    </button>
+                                </div>
+                                <div class="bg-light p-2 rounded font-monospace small text-break">
+                                    <strong>X:</strong> {{ share.x }} <br>
+                                    <strong>Y (Прев'ю перших блоків):</strong> {{ share.y_preview }}...
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="mt-4 text-start">
+                    <a href="{% url 'secrets_app:detail' secret.pk %}" class="btn btn-outline-secondary">Повернутись до секрету</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.btn-copy').forEach(button => {
+        button.addEventListener('click', function() {
+            const x = this.getAttribute('data-x');
+            const y = this.getAttribute('data-share');
+            const shareJson = JSON.stringify({ x: parseInt(x), y: y });
+            
+            navigator.clipboard.writeText(shareJson).then(() => {
+                const originalText = this.innerHTML;
+                this.innerHTML = '✅ Скопійовано!';
+                this.classList.remove('btn-outline-secondary');
+                this.classList.add('btn-success');
+                
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.classList.remove('btn-success');
+                    this.classList.add('btn-outline-secondary');
+                }, 2000);
+            });
+        });
+    });
+</script>
+{% endblock %}
